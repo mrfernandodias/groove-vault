@@ -1,0 +1,25 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint",
+    "EditorConfig.EditorConfig",
+    "esbenp.prettier-vscode",
+    "oxc.oxc-vscode"
+  ],
+  "unwantedRecommendations": [
+    "alexandersage.angular1-code-snippets",
+    "angular.ng-template",
+    "burkeholland.simple-react-snippets",
+    "dart-code.dart-code",
+    "dart-code.flutter",
+    "dsznajder.es7-react-js-snippets",
+    "expo.vscode-expo-tools",
+    "fastify.fastify-snippets",
+    "golang.go",
+    "msjsdiag.vscode-react-native",
+    "prisma.prisma",
+    "ritwickdey.liveserver",
+    "rodrigovallades.es7-react-js-snippets"
+  ]
+}
