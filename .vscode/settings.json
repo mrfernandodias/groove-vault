@@ -68,5 +68,6 @@
   "errorLens.enabled": true,
   "[javascript][javascriptreact][typescript][typescriptreact][vue][json][jsonc][css][scss][html][markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
-  }
+  },
+  "js/ts.tsdk.path": "apps/web/node_modules/typescript/lib"
 }
