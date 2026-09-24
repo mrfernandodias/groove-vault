@@ -1,0 +1,93 @@
+{
+  "Vue: componente base com TypeScript": {
+    "scope": "vue",
+    "prefix": "vbase",
+    "description": "Cria um componente Vue 3 com script setup, template e estilo scoped.",
+    "body": [
+      "<script setup lang=\"ts\">",
+      "$1",
+      "</script>",
+      "",
+      "<template>",
+      "  <div class=\"${2:component}\">",
+      "    $3",
+      "  </div>",
+      "</template>",
+      "",
+      "<style scoped>",
+      "$0",
+      "</style>"
+    ]
+  },
+  "Vue: página com TypeScript": {
+    "scope": "vue",
+    "prefix": "vpage",
+    "description": "Cria a estrutura inicial de uma página Vue acessível.",
+    "body": [
+      "<script setup lang=\"ts\">",
+      "$1",
+      "</script>",
+      "",
+      "<template>",
+      "  <main class=\"${2:page}\">",
+      "    <h1>${3:Título da página}</h1>",
+      "    $4",
+      "  </main>",
+      "</template>",
+      "",
+      "<style scoped>",
+      "$0",
+      "</style>"
+    ]
+  },
+  "Vue: props tipadas": {
+    "scope": "vue",
+    "prefix": "vprops",
+    "description": "Declara props tipadas com valores padrão opcionais.",
+    "body": [
+      "interface Props {",
+      "  ${1:title}: ${2:string};",
+      "  ${3:disabled}?: ${4:boolean};",
+      "}",
+      "",
+      "const props = withDefaults(defineProps<Props>(), {",
+      "  ${3:disabled}: ${5:false},",
+      "});",
+      "$0"
+    ]
+  },
+  "Vue: eventos tipados": {
+    "scope": "vue",
+    "prefix": "vemits",
+    "description": "Declara eventos de componente usando named tuples.",
+    "body": [
+      "const emit = defineEmits<{",
+      "  ${1:change}: [${2:value}: ${3:string}];",
+      "}>();",
+      "",
+      "$0"
+    ]
+  },
+  "Vue: model tipado": {
+    "scope": "vue",
+    "prefix": "vmodel",
+    "description": "Declara um v-model tipado com defineModel.",
+    "body": [
+      "const ${1:model} = defineModel<${2:string}>({",
+      "  required: ${3:true},",
+      "});",
+      "$0"
+    ]
+  },
+  "Vue: slots tipados": {
+    "scope": "vue",
+    "prefix": "vslots",
+    "description": "Declara slots tipados para o componente.",
+    "body": [
+      "defineSlots<{",
+      "  default(props: { ${1:item}: ${2:unknown} }): unknown;",
+      "}>();",
+      "$0"
+    ]
+  }
+}
