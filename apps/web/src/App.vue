@@ -2,11 +2,14 @@
 import { computed, ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
+import CollectionDrawer from "@/components/CollectionDrawer.vue";
+import CollectionDrawer from "@/components/CollectionDrawer.vue";
 import type { Album } from "@/types/album";
 
 const searchTerm = ref("");
 const submittedTerm = ref("");
 const collection = ref<Album[]>([]);
+const isCollectionOpen = ref(false);
 
 const albums: Album[] = [
   {
@@ -88,6 +91,18 @@ function addToCollection(album: Album): void {
 
   collection.value.push(album);
 }
+
+function openCollection(): void {
+  isCollectionOpen.value = true;
+}
+
+function closeCollection(): void {
+  isCollectionOpen.value = false;
+}
+
+function removeFromCollection(albumId: number): void {
+  collection.value = collection.value.filter((album) => album.id !== albumId);
+}
 </script>
 
 <template>
@@ -99,6 +114,39 @@ function addToCollection(album: Album): void {
     ></div>
 
     <section class="relative mx-auto w-full max-w-5xl text-center">
+      <header class="mb-16 flex items-center justify-between">
+        <div class="flex items-center gap-3 text-left">
+          <div
+            class="flex size-10 items-center justify-center rounded-xl bg-violet-500 font-black text-white"
+          >
+            G
+          </div>
+
+          <div>
+            <p class="font-semibold text-white">GrooveVault</p>
+            <p class="text-xs text-zinc-500">Memórias musicais</p>
+          </div>
+        </div>
+
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-zinc-300 transition hover:border-violet-400/30 hover:bg-white/10 hover:text-white"
+          aria-haspopup="dialog"
+          aria-controls="collection-drawer"
+          :aria-expanded="isCollectionOpen"
+          @click="openCollection"
+        >
+          Minha Coleção
+
+          <span
+            class="rounded-full bg-violet-400/15 px-2 py-0.5 text-xs font-semibold text-violet-500"
+          >
+            {{ collection.length }}
+            {{ collection.length === 1 ? "álbum" : "álbuns" }}
+          </span>
+        </button>
+      </header>
+
       <span
         class="inline-flex rounded-full border border-violet-400/20 bg-violet-400/10 px-4 py-1.5 text-sm font-medium text-violet-300"
       >
@@ -195,4 +243,11 @@ function addToCollection(album: Album): void {
       </section>
     </section>
   </main>
+
+  <CollectionDrawer
+    :is-open="isCollectionOpen"
+    :albums="collection"
+    @close="closeCollection"
+    @remove-album="removeFromCollection"
+  />
 </template>
