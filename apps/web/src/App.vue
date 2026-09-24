@@ -1,11 +1,10 @@
 <script setup lang="ts">
-import { computed, ref, watch } from "vue";
+import { computed, ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
+import { useCollection } from "@/composables/useCollection";
 import type { Album } from "@/types/album";
-
-const COLLECTION_STORAGE_KEY = "groove-vault:collection:v1";
 
 const albums: Album[] = [
   {
@@ -60,16 +59,9 @@ const albums: Album[] = [
 
 const searchTerm = ref("");
 const submittedTerm = ref("");
-const collection = ref<Album[]>(loadCollection());
 const isCollectionOpen = ref(false);
 
-watch(
-  collection,
-  (newCollection) => {
-    localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(newCollection));
-  },
-  { deep: true },
-);
+const { collection, isInCollection, addToCollection, removeFromCollection } = useCollection();
 
 const filteredAlbums = computed(() => {
   if (!submittedTerm.value) {
@@ -89,65 +81,12 @@ function handleSearch() {
   submittedTerm.value = searchTerm.value.trim();
 }
 
-function isInCollection(albumId: number): boolean {
-  return collection.value.some((album) => album.id === albumId);
-}
-
-function addToCollection(album: Album): void {
-  if (isInCollection(album.id)) {
-    return;
-  }
-
-  collection.value.push(album);
-}
-
 function openCollection(): void {
   isCollectionOpen.value = true;
 }
 
 function closeCollection(): void {
   isCollectionOpen.value = false;
-}
-
-function removeFromCollection(albumId: number): void {
-  collection.value = collection.value.filter((album) => album.id !== albumId);
-}
-
-function isAlbum(value: unknown): value is Album {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const album = value as Record<string, unknown>;
-
-  return (
-    typeof album.id === "number" &&
-    typeof album.title === "string" &&
-    typeof album.artist === "string" &&
-    typeof album.year === "number" &&
-    typeof album.initials === "string" &&
-    typeof album.coverClass === "string"
-  );
-}
-
-function loadCollection(): Album[] {
-  const storedCollection = localStorage.getItem(COLLECTION_STORAGE_KEY);
-
-  if (!storedCollection) {
-    return [];
-  }
-
-  try {
-    const parsedCollection: unknown = JSON.parse(storedCollection);
-
-    if (!Array.isArray(parsedCollection)) {
-      return [];
-    }
-
-    return parsedCollection.filter(isAlbum);
-  } catch {
-    return [];
-  }
 }
 </script>
 
