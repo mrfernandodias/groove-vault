@@ -1,11 +1,29 @@
 {
   "editor.formatOnSave": true,
+  "editor.wordWrap": "wordWrapColumn",
+  "editor.wordWrapColumn": 100,
+  "editor.wrappingIndent": "same",
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "explicit",
     "source.fixAll.oxc": "explicit",
     "source.organizeImports": "never"
   },
   "editor.rulers": [100],
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "editor.stickyScroll.enabled": true,
+  "editor.linkedEditing": true,
+  "editor.snippetSuggestions": "top",
+  "editor.quickSuggestions": {
+    "other": "on",
+    "comments": "off",
+    "strings": "on"
+  },
+  "editor.suggestOnTriggerCharacters": true,
+  "editor.suggestSelection": "first",
+  "editor.suggest.matchOnWordStartOnly": false,
+  "editor.tabCompletion": "on",
+  "editor.inlineSuggest.enabled": true,
   "files.eol": "\n",
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
@@ -15,9 +33,23 @@
   "prettier.requireConfig": true,
   "typescript.tsdk": "apps/web/node_modules/typescript/lib",
   "typescript.preferences.importModuleSpecifier": "non-relative",
+  "typescript.preferences.includePackageJsonAutoImports": "on",
+  "typescript.suggest.autoImports": true,
+  "typescript.updateImportsOnFileMove.enabled": "always",
+  "javascript.suggest.autoImports": true,
+  "javascript.updateImportsOnFileMove.enabled": "always",
   "emmet.includeLanguages": {
     "vue": "html"
   },
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.showExpandedAbbreviation": "always",
+  "emmet.showSuggestionsAsSnippets": true,
+  "tailwindCSS.suggestions": true,
+  "tailwindCSS.hovers": true,
+  "tailwindCSS.codeActions": true,
+  "tailwindCSS.colorDecorators": true,
+  "tailwindCSS.validate": true,
+  "tailwindCSS.emmetCompletions": true,
   "tailwindCSS.experimental.configFile": {
     "apps/web/src/assets/main.css": "apps/web/src/**"
   },
@@ -33,6 +65,7 @@
     "**/node_modules/**": true,
     "**/vendor/**": true
   },
+  "errorLens.enabled": true,
   "[javascript][javascriptreact][typescript][typescriptreact][vue][json][jsonc][css][scss][html][markdown]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   }

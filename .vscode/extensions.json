@@ -5,7 +5,9 @@
     "dbaeumer.vscode-eslint",
     "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
-    "oxc.oxc-vscode"
+    "oxc.oxc-vscode",
+    "usernamehw.errorlens",
+    "yoavbls.pretty-ts-errors"
   ],
   "unwantedRecommendations": [
     "alexandersage.angular1-code-snippets",
