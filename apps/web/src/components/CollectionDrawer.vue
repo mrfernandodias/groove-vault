@@ -14,6 +14,16 @@ const emit = defineEmits<{
 }>();
 
 const closeButton = ref<HTMLButtonElement | null>(null);
+const drawerPanel = ref<HTMLElement | null>(null);
+
+const focusableElementSelector = [
+  "a[href]",
+  "button:not([disabled])",
+  "input:not([disabled])",
+  "select:not([disabled])",
+  "textarea:not([disabled])",
+  '[tabindex]:not([tabindex="-1"])',
+].join(",");
 
 let previouslyFocusedElement: HTMLElement | null = null;
 let previousBodyOverflow = "";
@@ -21,12 +31,48 @@ let previousBodyOverflow = "";
 function handleKeydown(event: KeyboardEvent): void {
   if (event.key === "Escape") {
     emit("close");
+    return;
+  }
+
+  if (event.key !== "Tab" || !props.isOpen) {
+    return;
+  }
+
+  const focusableElements = getFocusableElements();
+
+  if (!focusableElements.length) {
+    event.preventDefault();
+    drawerPanel.value?.focus();
+    return;
+  }
+
+  const firstElement = focusableElements[0];
+  const lastElement = focusableElements[focusableElements.length - 1];
+  const activeElement = document.activeElement;
+
+  if (event.shiftKey && activeElement === firstElement) {
+    event.preventDefault();
+    lastElement?.focus();
+    return;
+  }
+
+  if (!event.shiftKey && activeElement === lastElement) {
+    event.preventDefault();
+    firstElement?.focus();
   }
 }
 
 function cleanupDrawerEffects(): void {
   document.body.style.overflow = previousBodyOverflow;
   window.removeEventListener("keydown", handleKeydown);
+}
+
+function getFocusableElements(): HTMLElement[] {
+  if (!drawerPanel.value) {
+    return [];
+  }
+
+  return Array.from(drawerPanel.value.querySelectorAll<HTMLElement>(focusableElementSelector));
 }
 
 watch(
@@ -61,21 +107,40 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport to="body">
-    <div v-if="isOpen" class="fixed inset-0 z-50">
+    <Transition
+      enter-active-class="transition-opacity duration-200 ease-out motion-reduce:transition-none"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition-opacity duration-150 ease-in motion-reduce:transition-none"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
       <button
-        ref="closeButton"
+        v-if="isOpen"
         type="button"
-        class="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
+        class="fixed inset-0 z-40 cursor-default bg-black/70 backdrop-blur-sm"
         aria-label="Fechar coleção"
         @click="emit('close')"
       ></button>
+    </Transition>
 
+    <Transition
+      enter-active-class="transition-transform duration-300 ease-out motion-reduce:transition-none"
+      enter-from-class="translate-x-full"
+      enter-to-class="translate-x-0"
+      leave-active-class="transition-transform duration-200 ease-in motion-reduce:transition-none"
+      leave-from-class="translate-x-0"
+      leave-to-class="translate-x-full"
+    >
       <aside
-        id="collection-number"
+        v-if="isOpen"
+        id="collection-drawer"
+        ref="drawerPanel"
+        tabindex="-1"
         role="dialog"
         aria-modal="true"
         aria-labelledby="collection-title"
-        class="absolute top-0 right-0 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-zinc-950 shadow-2xl"
+        class="fixed top-0 right-0 z-50 flex h-full w-full max-w-md flex-col border-l border-white/10 bg-zinc-950 shadow-2xl"
       >
         <header class="flex items-center justify-between border-b border-white/10 px-6 py-5">
           <div>
@@ -87,8 +152,9 @@ onBeforeUnmount(() => {
           </div>
 
           <button
+            ref="closeButton"
             type="button"
-            class="rounded-xl border border-white/10 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white"
+            class="cursor-pointer rounded-xl border border-white/10 p-2 text-zinc-400 transition hover:bg-white/10 hover:text-white"
             aria-label="Fechar coleção"
             @click="emit('close')"
           >
@@ -185,6 +251,6 @@ onBeforeUnmount(() => {
           {{ albums.length === 1 ? "álbum guardado" : "álbuns guardados" }}
         </footer>
       </aside>
-    </div>
+    </Transition>
   </Teleport>
 </template>
