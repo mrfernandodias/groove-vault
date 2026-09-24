@@ -1,14 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
 import type { Album } from "@/types/album";
 
-const searchTerm = ref("");
-const submittedTerm = ref("");
-const collection = ref<Album[]>([]);
-const isCollectionOpen = ref(false);
+const COLLECTION_STORAGE_KEY = "groove-vault:collection:v1";
 
 const albums: Album[] = [
   {
@@ -61,6 +58,19 @@ const albums: Album[] = [
   },
 ];
 
+const searchTerm = ref("");
+const submittedTerm = ref("");
+const collection = ref<Album[]>(loadCollection());
+const isCollectionOpen = ref(false);
+
+watch(
+  collection,
+  (newCollection) => {
+    localStorage.setItem(COLLECTION_STORAGE_KEY, JSON.stringify(newCollection));
+  },
+  { deep: true },
+);
+
 const filteredAlbums = computed(() => {
   if (!submittedTerm.value) {
     return [];
@@ -101,6 +111,43 @@ function closeCollection(): void {
 
 function removeFromCollection(albumId: number): void {
   collection.value = collection.value.filter((album) => album.id !== albumId);
+}
+
+function isAlbum(value: unknown): value is Album {
+  if (typeof value !== "object" || value === null) {
+    return false;
+  }
+
+  const album = value as Record<string, unknown>;
+
+  return (
+    typeof album.id === "number" &&
+    typeof album.title === "string" &&
+    typeof album.artist === "string" &&
+    typeof album.year === "number" &&
+    typeof album.initials === "string" &&
+    typeof album.coverClass === "string"
+  );
+}
+
+function loadCollection(): Album[] {
+  const storedCollection = localStorage.getItem(COLLECTION_STORAGE_KEY);
+
+  if (!storedCollection) {
+    return [];
+  }
+
+  try {
+    const parsedCollection: unknown = JSON.parse(storedCollection);
+
+    if (!Array.isArray(parsedCollection)) {
+      return [];
+    }
+
+    return parsedCollection.filter(isAlbum);
+  } catch {
+    return [];
+  }
 }
 </script>
 
