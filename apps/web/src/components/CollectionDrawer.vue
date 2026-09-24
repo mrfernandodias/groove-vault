@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+
 import type { Album } from "@/types/album";
 
-defineProps<{
+const props = defineProps<{
   isOpen: boolean;
   albums: Album[];
 }>();
@@ -10,12 +12,58 @@ const emit = defineEmits<{
   close: [];
   "remove-album": [albumId: number];
 }>();
+
+const closeButton = ref<HTMLButtonElement | null>(null);
+
+let previouslyFocusedElement: HTMLElement | null = null;
+let previousBodyOverflow = "";
+
+function handleKeydown(event: KeyboardEvent): void {
+  if (event.key === "Escape") {
+    emit("close");
+  }
+}
+
+function cleanupDrawerEffects(): void {
+  document.body.style.overflow = previousBodyOverflow;
+  window.removeEventListener("keydown", handleKeydown);
+}
+
+watch(
+  () => props.isOpen,
+  async (isOpen) => {
+    if (isOpen) {
+      previouslyFocusedElement =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+
+      window.addEventListener("keydown", handleKeydown);
+
+      await nextTick();
+      closeButton.value?.focus();
+
+      return;
+    }
+
+    cleanupDrawerEffects();
+
+    previouslyFocusedElement?.focus();
+    previouslyFocusedElement = null;
+  },
+);
+
+onBeforeUnmount(() => {
+  cleanupDrawerEffects();
+});
 </script>
 
 <template>
   <Teleport to="body">
     <div v-if="isOpen" class="fixed inset-0 z-50">
       <button
+        ref="closeButton"
         type="button"
         class="absolute inset-0 cursor-default bg-black/70 backdrop-blur-sm"
         aria-label="Fechar coleção"
