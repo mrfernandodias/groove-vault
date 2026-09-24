@@ -3,7 +3,6 @@ import { computed, ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
-import CollectionDrawer from "@/components/CollectionDrawer.vue";
 import type { Album } from "@/types/album";
 
 const searchTerm = ref("");
