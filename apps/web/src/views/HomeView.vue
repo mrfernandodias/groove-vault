@@ -1,10 +1,11 @@
 <script setup lang="ts">
+import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
-import { useCollection } from "@/composables/useCollection";
 import { localAlbumRepository } from "@/repositories/albumRepository";
+import { useCollectionStore } from "@/stores/collection";
 import type { Album } from "@/types/album";
 
 const searchTerm = ref("");
@@ -14,7 +15,11 @@ const searchResults = ref<Album[]>([]);
 const isSearching = ref(false);
 const searchError = ref("");
 
-const { collection, isInCollection, addToCollection, removeFromCollection } = useCollection();
+const collectionStore = useCollectionStore();
+
+const { collection } = storeToRefs(collectionStore);
+
+const { isInCollection, addToCollection, removeFromCollection } = collectionStore;
 
 async function handleSearch(): Promise<void> {
   submittedTerm.value = searchTerm.value.trim();
