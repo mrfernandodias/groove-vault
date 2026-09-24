@@ -57,12 +57,24 @@ const albums: Album[] = [
 
 export const localAlbumRepository: AlbumRepository = {
   async search(term: string): Promise<Album[]> {
-    const normalizedTerm = term.toLocaleLowerCase("pt-BR");
+    const normalizedTerm = normalizeSearchText(term);
+
+    if (!normalizedTerm) {
+      return [];
+    }
 
     return albums.filter((album) => {
-      const searchableContent = `${album.title} ${album.artist}`.toLocaleLowerCase("pt-BR");
+      const searchableContent = normalizeSearchText(`${album.title} ${album.artist}`);
 
       return searchableContent.includes(normalizedTerm);
     });
   },
 };
+
+function normalizeSearchText(value: string): string {
+  return value
+    .trim()
+    .normalize("NFD")
+    .replace(/\p{Diacritic}/gu, "")
+    .toLocaleLowerCase("pt-BR");
+}
