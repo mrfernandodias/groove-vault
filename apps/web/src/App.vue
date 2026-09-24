@@ -1,84 +1,39 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
 import { useCollection } from "@/composables/useCollection";
+import { localAlbumRepository } from "@/repositories/albumRepository";
 import type { Album } from "@/types/album";
-
-const albums: Album[] = [
-  {
-    id: 1,
-    title: "The Dark Side of the Moon",
-    artist: "Pink Floyd",
-    year: 1973,
-    initials: "DS",
-    coverClass: "from-indigo-500 to-fuchsia-600",
-  },
-  {
-    id: 2,
-    title: "Clube da Esquina",
-    artist: "Milton Nascimento & Lô Borges",
-    year: 1972,
-    initials: "CE",
-    coverClass: "from-amber-400 to-orange-600",
-  },
-  {
-    id: 3,
-    title: "A Tábua de Esmeralda",
-    artist: "Jorge Ben Jor",
-    year: 1974,
-    initials: "TE",
-    coverClass: "from-emerald-400 to-teal-700",
-  },
-  {
-    id: 4,
-    title: "In Rainbows",
-    artist: "Radiohead",
-    year: 2007,
-    initials: "IR",
-    coverClass: "from-rose-500 to-orange-500",
-  },
-  {
-    id: 5,
-    title: "Construção",
-    artist: "Chico Buarque",
-    year: 1971,
-    initials: "CB",
-    coverClass: "from-sky-500 to-blue-800",
-  },
-  {
-    id: 6,
-    title: "Random Access Memories",
-    artist: "Daft Punk",
-    year: 2013,
-    initials: "RAM",
-    coverClass: "from-yellow-300 to-yellow-700",
-  },
-];
 
 const searchTerm = ref("");
 const submittedTerm = ref("");
 const isCollectionOpen = ref(false);
+const searchResults = ref<Album[]>([]);
+const isSearching = ref(false);
+const searchError = ref("");
 
 const { collection, isInCollection, addToCollection, removeFromCollection } = useCollection();
 
-const filteredAlbums = computed(() => {
+async function handleSearch(): Promise<void> {
+  submittedTerm.value = searchTerm.value.trim();
+  searchResults.value = [];
+  searchError.value = "";
+
   if (!submittedTerm.value) {
-    return [];
+    return;
   }
 
-  const normalizedTerm = submittedTerm.value.toLocaleLowerCase("pt-BR");
+  isSearching.value = true;
 
-  return albums.filter((album) => {
-    const searchableContent = `${album.title} ${album.artist}`.toLocaleLowerCase("pt-BR");
-
-    return searchableContent.includes(normalizedTerm);
-  });
-});
-
-function handleSearch() {
-  submittedTerm.value = searchTerm.value.trim();
+  try {
+    searchResults.value = await localAlbumRepository.search(submittedTerm.value);
+  } catch {
+    searchError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
+  } finally {
+    isSearching.value = false;
+  }
 }
 
 function openCollection(): void {
@@ -175,9 +130,33 @@ function closeCollection(): void {
 
           <button
             type="submit"
-            class="rounded-xl bg-violet-500 px-5 py-3 font-semibold text-white transition hover:bg-violet-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-violet-400"
+            :disabled="isSearching"
+            class="inline-flex items-center justify-center gap-2 rounded-xl bg-violet-500 px-5 py-3 font-semibold text-white transition hover:bg-violet-400 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Pesquisar
+            <svg
+              v-if="isSearching"
+              class="size-5 animate-spin"
+              viewBox="0 0 24 24"
+              fill="none"
+              aria-hidden="true"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="9"
+                stroke="currentColor"
+                stroke-width="3"
+              />
+
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M12 3a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6V3Z"
+              />
+            </svg>
+
+            {{ isSearching ? "Pesquisando" : "Pesquisar" }}
           </button>
         </div>
 
@@ -195,8 +174,8 @@ function closeCollection(): void {
             <p class="text-sm font-medium text-violet-300">Resultados</p>
 
             <h2 class="mt-1 text-2xl font-semibold text-white">
-              {{ filteredAlbums.length }}
-              {{ filteredAlbums.length === 1 ? "álbum encontrado" : "álbuns encontrados" }}
+              {{ searchResults.length }}
+              {{ searchResults.length === 1 ? "álbum encontrado" : "álbuns encontrados" }}
             </h2>
           </div>
           <span
@@ -207,9 +186,49 @@ function closeCollection(): void {
           </span>
         </div>
 
-        <div v-if="filteredAlbums.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div
+          v-if="isSearching"
+          class="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-zinc-400"
+          role="status"
+        >
+          <svg
+            class="size-5 animate-spin text-violet-400"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden="true"
+          >
+            <circle
+              class="opacity-25"
+              cx="12"
+              cy="12"
+              r="9"
+              stroke="currentColor"
+              stroke-width="3"
+            />
+
+            <path
+              class="opacity-75"
+              fill="currentColor"
+              d="M12 3a9 9 0 0 1 9 9h-3a6 6 0 0 0-6-6V3Z"
+            />
+          </svg>
+
+          Pesquisando álbuns...
+        </div>
+
+        <div
+          v-else-if="searchError"
+          class="rounded-2xl border border-red-400/20 bg-red-400/10 px-6 py-10 text-center"
+          role="alert"
+        >
+          <p class="font-medium text-red-300">
+            {{ searchError }}
+          </p>
+        </div>
+
+        <div v-else-if="searchResults.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <AlbumCard
-            v-for="album in filteredAlbums"
+            v-for="album in searchResults"
             :key="album.id"
             :album="album"
             :is-in-collection="isInCollection(album.id)"
@@ -221,7 +240,7 @@ function closeCollection(): void {
           v-else
           class="rounded-2xl border border-dashed border-white/10 bg-white/3 px-6 py-12 text-center"
         >
-          <p class="font-medium text-zinc-300">Nenhum álbum encontrado</p>
+          <p class="font-medium text-zinc-300">Nenhum álbum encontrado.</p>
 
           <p class="mt-2 text-sm text-zinc-500">Tente pesquisar por outro álbum ou artista.</p>
         </div>
