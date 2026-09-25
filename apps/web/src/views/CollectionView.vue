@@ -105,6 +105,18 @@ const collectionStore = useCollectionStore();
                 <p class="mt-3 text-xs font-medium tracking-wider text-zinc-500 uppercase">
                   {{ album.year }}
                 </p>
+
+                <RouterLink
+                  :to="{
+                    name: 'album-details',
+                    params: {
+                      albumId: album.id,
+                    },
+                  }"
+                  class="mt-3 inline-flex text-sm font-semibold text-violet-400 transition hover:text-violet-300"
+                >
+                  Ver detalhes
+                </RouterLink>
               </div>
 
               <button

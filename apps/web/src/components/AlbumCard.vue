@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { RouterLink } from "vue-router";
+
 import type { Album } from "@/types/album";
 
 defineProps<{
@@ -34,6 +36,29 @@ const emit = defineEmits<{
       <p class="mt-3 text-xs font-medium tracking-wider text-zinc-500 uppercase">
         {{ album.year }}
       </p>
+
+      <RouterLink
+        :to="{
+          name: 'album-details',
+          params: {
+            albumId: album.id,
+          },
+        }"
+        class="mt-4 inline-flex items-center gap-2 text-sm font-semibold text-violet-400 transition hover:text-violet-300"
+      >
+        Ver detalhes
+
+        <svg
+          class="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          aria-hidden="true"
+        >
+          <path d="m9 18 6-6-6-6" />
+        </svg>
+      </RouterLink>
 
       <button
         type="button"

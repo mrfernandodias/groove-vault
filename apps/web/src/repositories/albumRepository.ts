@@ -1,10 +1,5 @@
 import type { Album } from "@/types/album";
 
-export interface AlbumRepository {
-  search(term: string): Promise<Album[]>;
-  findById(albumId: number): Promise<Album | null | undefined>;
-}
-
 const albums: Album[] = [
   {
     id: 1,
@@ -56,6 +51,11 @@ const albums: Album[] = [
   },
 ];
 
+export interface AlbumRepository {
+  search(term: string): Promise<Album[]>;
+  findById(albumId: number): Promise<Album | null>;
+}
+
 export const localAlbumRepository: AlbumRepository = {
   async search(term: string): Promise<Album[]> {
     const normalizedTerm = normalizeSearchText(term);
@@ -71,7 +71,7 @@ export const localAlbumRepository: AlbumRepository = {
     });
   },
 
-  async findById(albumId: number): Promise<Album | null | undefined> {
+  async findById(albumId: number): Promise<Album | null> {
     return albums.find((album) => album.id === albumId) ?? null;
   },
 };

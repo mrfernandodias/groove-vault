@@ -44,10 +44,10 @@ describe("localAlbumRepository", () => {
   });
 
   it("finds an album by its ID", async () => {
-    const album = await localAlbumRepository.findById(1);
+    const album = await localAlbumRepository.findById(4);
 
     expect(album).toBeDefined();
-    expect(album?.title).toBe("The Dark Side of the Moon");
+    expect(album?.title).toBe("In Rainbows");
   });
 
   it("returns null when an album with the given ID does not exist", async () => {

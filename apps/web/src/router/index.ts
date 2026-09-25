@@ -17,8 +17,8 @@ export const router = createRouter({
       component: () => import("@/views/CollectionView.vue"),
     },
     {
-      path: "/album/:albumId",
-      name: "album",
+      path: "/albums/:albumId",
+      name: "album-details",
       component: () => import("@/views/AlbumDetailsView.vue"),
       props: true,
     },
