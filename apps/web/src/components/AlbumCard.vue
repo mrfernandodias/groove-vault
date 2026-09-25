@@ -34,7 +34,7 @@ const emit = defineEmits<{
       </p>
 
       <p class="mt-3 text-xs font-medium tracking-wider text-zinc-500 uppercase">
-        {{ album.year }}
+        {{ album.year ?? "Ano desconhecido" }}
       </p>
 
       <RouterLink

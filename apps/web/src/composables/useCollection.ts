@@ -15,9 +15,10 @@ function isAlbum(value: unknown): value is Album {
     typeof album.id === "number" &&
     typeof album.title === "string" &&
     typeof album.artist === "string" &&
-    typeof album.year === "number" &&
+    (album.year === null || typeof album.year === "number") &&
     typeof album.initials === "string" &&
-    typeof album.coverClass === "string"
+    typeof album.coverClass === "string" &&
+    (album.coverUrl === undefined || typeof album.coverUrl === "string")
   );
 }
 

@@ -189,7 +189,7 @@ watch(
 
         <div>
           <p class="text-sm font-semibold text-violet-400">
-            {{ album.year }}
+            {{ album.year || "Ano desconhecido" }}
           </p>
 
           <h1 class="mt-3 text-4xl font-bold tracking-tight text-white sm:text-6xl">

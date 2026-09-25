@@ -222,7 +222,7 @@ onBeforeUnmount(() => {
                 </p>
 
                 <p class="mt-1 text-xs text-zinc-600">
-                  {{ album.year }}
+                  {{ album.year || "Ano desconhecido" }}
                 </p>
               </div>
 
