@@ -11,5 +11,16 @@ export const router = createRouter({
       name: "home",
       component: HomeView,
     },
+    {
+      path: "/collection",
+      name: "collection",
+      component: () => import("@/views/CollectionView.vue"),
+    },
+    {
+      path: "/album/:albumId",
+      name: "album",
+      component: () => import("@/views/AlbumDetailsView.vue"),
+      props: true,
+    },
   ],
 });

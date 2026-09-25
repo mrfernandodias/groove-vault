@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { RouterLink } from "vue-router";
 
 import type { Album } from "@/types/album";
 
@@ -246,9 +247,30 @@ onBeforeUnmount(() => {
           </ul>
         </div>
 
-        <footer class="border-t border-white/10 px-6 py-5 text-sm text-zinc-500">
-          {{ albums.length }}
-          {{ albums.length === 1 ? "álbum guardado" : "álbuns guardados" }}
+        <footer class="flex items-center justify-between gap-4 border-t border-white/10 px-6 py-5">
+          <p class="text-sm text-zinc-500">
+            {{ albums.length }}
+            {{ albums.length === 1 ? "álbum guardado" : "álbuns guardados" }}
+          </p>
+
+          <RouterLink
+            :to="{ name: 'collection' }"
+            class="inline-flex items-center gap-2 rounded-xl bg-violet-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-400"
+            @click="emit('close')"
+          >
+            Ver coleção
+
+            <svg
+              class="size-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              aria-hidden="true"
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </RouterLink>
         </footer>
       </aside>
     </Transition>

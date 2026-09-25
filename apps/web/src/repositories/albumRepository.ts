@@ -2,6 +2,7 @@ import type { Album } from "@/types/album";
 
 export interface AlbumRepository {
   search(term: string): Promise<Album[]>;
+  findById(albumId: number): Promise<Album | null | undefined>;
 }
 
 const albums: Album[] = [
@@ -68,6 +69,10 @@ export const localAlbumRepository: AlbumRepository = {
 
       return searchableContent.includes(normalizedTerm);
     });
+  },
+
+  async findById(albumId: number): Promise<Album | null | undefined> {
+    return albums.find((album) => album.id === albumId) ?? null;
   },
 };
 

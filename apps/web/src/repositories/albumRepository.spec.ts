@@ -42,4 +42,17 @@ describe("localAlbumRepository", () => {
     expect(results).toHaveLength(1);
     expect(results[0]?.title).toBe("Construção");
   });
+
+  it("finds an album by its ID", async () => {
+    const album = await localAlbumRepository.findById(1);
+
+    expect(album).toBeDefined();
+    expect(album?.title).toBe("The Dark Side of the Moon");
+  });
+
+  it("returns null when an album with the given ID does not exist", async () => {
+    const album = await localAlbumRepository.findById(999);
+
+    expect(album).toBeNull();
+  });
 });
