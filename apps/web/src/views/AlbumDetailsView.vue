@@ -2,7 +2,7 @@
 import { ref, watch } from "vue";
 import { RouterLink } from "vue-router";
 
-import { localAlbumRepository } from "@/repositories/albumRepository";
+import { albumRepository } from "@/config/dependencies";
 import { useCollectionStore } from "@/stores/collection";
 import type { Album } from "@/types/album";
 
@@ -33,7 +33,7 @@ async function loadAlbum(albumIdParam: string): Promise<void> {
   isLoading.value = true;
 
   try {
-    const foundAlbum = await localAlbumRepository.findById(parsedAlbumId);
+    const foundAlbum = await albumRepository.findById(parsedAlbumId);
 
     if (!foundAlbum) {
       isNotFound.value = true;

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { localAlbumRepository } from "@/repositories/albumRepository";
+import { localAlbumRepository } from "@/repositories/localAlbumRepository";
 
 describe("localAlbumRepository", () => {
   it("searches an album by title ignoring letter case", async () => {

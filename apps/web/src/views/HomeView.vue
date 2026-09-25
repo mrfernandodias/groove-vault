@@ -4,7 +4,7 @@ import { ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
-import { localAlbumRepository } from "@/repositories/albumRepository";
+import { albumRepository } from "@/config/dependencies";
 import { useCollectionStore } from "@/stores/collection";
 import type { Album } from "@/types/album";
 
@@ -33,7 +33,7 @@ async function handleSearch(): Promise<void> {
   isSearching.value = true;
 
   try {
-    searchResults.value = await localAlbumRepository.search(submittedTerm.value);
+    searchResults.value = await albumRepository.search(submittedTerm.value);
   } catch {
     searchError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
   } finally {
