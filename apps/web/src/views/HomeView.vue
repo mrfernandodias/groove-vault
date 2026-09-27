@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { computed, ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
@@ -14,6 +14,11 @@ const isCollectionOpen = ref(false);
 const searchResults = ref<Album[]>([]);
 const isSearching = ref(false);
 const searchError = ref("");
+const currentPage = ref(0);
+const totalPages = ref(0);
+const totalItems = ref(0);
+const isLoadingMore = ref(false);
+const paginationError = ref("");
 
 const collectionStore = useCollectionStore();
 
@@ -21,10 +26,18 @@ const { collection } = storeToRefs(collectionStore);
 
 const { isInCollection, addToCollection, removeFromCollection } = collectionStore;
 
+const hasMoreResults = computed(() => {
+  return currentPage.value < totalPages.value;
+});
+
 async function handleSearch(): Promise<void> {
   submittedTerm.value = searchTerm.value.trim();
   searchResults.value = [];
   searchError.value = "";
+  currentPage.value = 0;
+  totalPages.value = 0;
+  totalItems.value = 0;
+  paginationError.value = "";
 
   if (!submittedTerm.value) {
     return;
@@ -33,11 +46,52 @@ async function handleSearch(): Promise<void> {
   isSearching.value = true;
 
   try {
-    searchResults.value = await albumRepository.search(submittedTerm.value);
+    const result = await albumRepository.search({
+      query: submittedTerm.value,
+      page: 1,
+      perPage: 12,
+    });
+
+    searchResults.value = result.albums;
+    currentPage.value = result.page;
+    totalPages.value = result.totalPages;
+    totalItems.value = result.totalItems;
   } catch {
     searchError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
   } finally {
     isSearching.value = false;
+  }
+}
+
+async function loadMoreResults(): Promise<void> {
+  if (!submittedTerm.value || !hasMoreResults.value || isLoadingMore.value) {
+    return;
+  }
+
+  isLoadingMore.value = true;
+  paginationError.value = "";
+
+  try {
+    const result = await albumRepository.search({
+      query: submittedTerm.value,
+      page: currentPage.value + 1,
+      perPage: 12,
+    });
+
+    const existingIds = new Set(searchResults.value.map((album) => album.id));
+
+    const newAlbums = result.albums.filter((album) => !existingIds.has(album.id));
+
+    searchResults.value.push(...newAlbums);
+    currentPage.value = result.page;
+    totalPages.value = result.totalPages;
+    totalItems.value = result.totalItems;
+  } catch (error: unknown) {
+    console.error("Falha ao pesquisar álbuns:", error);
+
+    paginationError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
+  } finally {
+    isLoadingMore.value = false;
   }
 }
 
@@ -179,8 +233,8 @@ function closeCollection(): void {
             <p class="text-sm font-medium text-violet-300">Resultados</p>
 
             <h2 class="mt-1 text-2xl font-semibold text-white">
-              {{ searchResults.length }}
-              {{ searchResults.length === 1 ? "álbum encontrado" : "álbuns encontrados" }}
+              {{ totalItems }}
+              {{ totalItems === 1 ? "álbum encontrado" : "álbuns encontrados" }}
             </h2>
           </div>
           <span
@@ -231,7 +285,7 @@ function closeCollection(): void {
           </p>
         </div>
 
-        <div v-else-if="searchResults.length" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-else-if="searchResults.length > 0" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <AlbumCard
             v-for="album in searchResults"
             :key="album.id"
@@ -249,6 +303,25 @@ function closeCollection(): void {
 
           <p class="mt-2 text-sm text-zinc-500">Tente pesquisar por outro álbum ou artista.</p>
         </div>
+
+        <div v-if="hasMoreResults" class="mt-8 flex flex-col items-center gap-3">
+          <button
+            type="button"
+            :disabled="isLoadingMore"
+            class="inline-flex cursor-pointer items-center gap-2 rounded-xl border border-violet-400/30 bg-violet-400/10 px-5 py-3 font-semibold text-violet-300 transition hover:bg-violet-400/20 disabled:cursor-not-allowed disabled:opacity-60"
+            @click="loadMoreResults"
+          >
+            {{ isLoadingMore ? "Carregando..." : "Carregar mais" }}
+          </button>
+
+          <p class="text-sm text-zinc-500">
+            Exibindo {{ searchResults.length }} de {{ totalItems }}
+          </p>
+        </div>
+
+        <p v-if="paginationError" class="mt-4 text-center text-sm text-red-300" role="alert">
+          {{ paginationError }}
+        </p>
       </section>
     </section>
   </main>

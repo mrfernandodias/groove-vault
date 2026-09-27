@@ -4,43 +4,58 @@ import { localAlbumRepository } from "@/repositories/localAlbumRepository";
 
 describe("localAlbumRepository", () => {
   it("searches an album by title ignoring letter case", async () => {
-    const results = await localAlbumRepository.search("dark side");
+    const result = await localAlbumRepository.search({ query: "DARK SIDE" });
 
-    expect(results).toHaveLength(1);
-    expect(results[0]?.title).toBe("The Dark Side of the Moon");
+    expect(result.albums).toHaveLength(1);
+    expect(result.albums[0]?.title).toBe("The Dark Side of the Moon");
+    expect(result).toMatchObject({ page: 1, totalPages: 1, totalItems: 1 });
   });
 
   it("searches albums by artist", async () => {
-    const results = await localAlbumRepository.search("milton");
+    const result = await localAlbumRepository.search({ query: "milton" });
 
-    expect(results).toHaveLength(1);
-    expect(results[0]?.title).toBe("Clube da Esquina");
+    expect(result.albums).toHaveLength(1);
+    expect(result.albums[0]?.title).toBe("Clube da Esquina");
   });
 
-  it("returns an empty array when no album matches", async () => {
-    const results = await localAlbumRepository.search("álbum inexistente");
+  it("returns an empty paginated result when no album matches", async () => {
+    const result = await localAlbumRepository.search({ query: "álbum inexistente" });
 
-    expect(results).toEqual([]);
+    expect(result).toEqual({ albums: [], page: 1, totalPages: 0, totalItems: 0 });
   });
 
-  it("returns an empty array when the search term is empty", async () => {
-    const results = await localAlbumRepository.search("");
+  it("returns an empty paginated result when the search term is blank", async () => {
+    const result = await localAlbumRepository.search({ query: "   " });
 
-    expect(results).toEqual([]);
+    expect(result).toEqual({ albums: [], page: 1, totalPages: 0, totalItems: 0 });
   });
 
   it("searches ignoring accents", async () => {
-    const results = await localAlbumRepository.search("tabua");
+    const result = await localAlbumRepository.search({ query: "tabua" });
 
-    expect(results).toHaveLength(1);
-    expect(results[0]?.title).toBe("A Tábua de Esmeralda");
+    expect(result.albums).toHaveLength(1);
+    expect(result.albums[0]?.title).toBe("A Tábua de Esmeralda");
   });
 
   it("searches ignoring cedillas and accents", async () => {
-    const results = await localAlbumRepository.search("construcao");
+    const result = await localAlbumRepository.search({ query: "construcao" });
 
-    expect(results).toHaveLength(1);
-    expect(results[0]?.title).toBe("Construção");
+    expect(result.albums).toHaveLength(1);
+    expect(result.albums[0]?.title).toBe("Construção");
+  });
+
+  it("paginates matching albums and reports the full result count", async () => {
+    const result = await localAlbumRepository.search({ query: "a", page: 2, perPage: 2 });
+
+    expect(result.albums.map((album) => album.id)).toEqual([3, 4]);
+    expect(result).toMatchObject({ page: 2, totalPages: 3, totalItems: 6 });
+  });
+
+  it("normalizes invalid pagination values", async () => {
+    const result = await localAlbumRepository.search({ query: "pink", page: 0, perPage: 0 });
+
+    expect(result.albums).toHaveLength(1);
+    expect(result).toMatchObject({ page: 1, totalPages: 1, totalItems: 1 });
   });
 
   it("finds an album by its ID", async () => {

@@ -8,7 +8,7 @@ import {
 } from "@/integrations/discogs/discogsAlbumMapper";
 import type { Album } from "@/types/album";
 
-import type { AlbumRepository } from "./albumRepository";
+import type { AlbumRepository, AlbumSearchParams, AlbumSearchResult } from "./albumRepository";
 
 const DISCOGS_API_URL = "https://api.discogs.com";
 
@@ -42,25 +42,40 @@ async function requestDiscogs<T>(url: URL | string): Promise<T> {
 }
 
 export const discogsAlbumRepository: AlbumRepository = {
-  async search(query: string): Promise<Album[]> {
+  async search({ query, page = 1, perPage = 12 }: AlbumSearchParams): Promise<AlbumSearchResult> {
     const normalizedQuery = query.trim();
 
     if (!normalizedQuery) {
-      return [];
+      return {
+        albums: [],
+        page: 1,
+        totalPages: 0,
+        totalItems: 0,
+      };
     }
+
+    const safePage = Math.max(1, page);
+    const safePerPage = Math.min(50, Math.max(1, perPage));
 
     const url = new URL(`${DISCOGS_API_URL}/database/search`);
 
     url.searchParams.set("q", normalizedQuery);
     url.searchParams.set("type", "master");
-    url.searchParams.set("page", "1");
-    url.searchParams.set("per_page", "12");
+    url.searchParams.set("page", String(safePage));
+    url.searchParams.set("per_page", String(safePerPage));
 
     const response = await requestDiscogs<DiscogsSearchResponseDto>(url);
 
-    return response.results
+    const albums = response.results
       .map(mapDiscogsSearchResultToAlbum)
       .filter((album): album is Album => album !== null);
+
+    return {
+      albums,
+      page: response.pagination.page,
+      totalPages: response.pagination.pages,
+      totalItems: response.pagination.items,
+    };
   },
 
   async findById(id: number): Promise<Album | null> {

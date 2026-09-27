@@ -1,4 +1,8 @@
-import type { AlbumRepository } from "@/repositories/albumRepository";
+import type {
+  AlbumRepository,
+  AlbumSearchParams,
+  AlbumSearchResult,
+} from "@/repositories/albumRepository";
 import type { Album } from "@/types/album";
 
 const albums: Album[] = [
@@ -61,18 +65,34 @@ function normalizeSearchText(value: string): string {
 }
 
 export const localAlbumRepository: AlbumRepository = {
-  async search(term: string): Promise<Album[]> {
-    const normalizedTerm = normalizeSearchText(term);
+  async search({ query, page = 1, perPage = 12 }: AlbumSearchParams): Promise<AlbumSearchResult> {
+    const normalizedQuery = normalizeSearchText(query);
 
-    if (!normalizedTerm) {
-      return [];
+    if (!normalizedQuery) {
+      return {
+        albums: [],
+        page: 1,
+        totalPages: 0,
+        totalItems: 0,
+      };
     }
 
-    return albums.filter((album) => {
+    const filteredAlbums = albums.filter((album) => {
       const searchableContent = normalizeSearchText(`${album.title} ${album.artist}`);
 
-      return searchableContent.includes(normalizedTerm);
+      return searchableContent.includes(normalizedQuery);
     });
+
+    const safePage = Math.max(1, page);
+    const safePerPage = Math.max(1, perPage);
+    const startIndex = (safePage - 1) * safePerPage;
+
+    return {
+      albums: filteredAlbums.slice(startIndex, startIndex + safePerPage),
+      page: safePage,
+      totalPages: Math.ceil(filteredAlbums.length / safePerPage),
+      totalItems: filteredAlbums.length,
+    };
   },
 
   async findById(albumId: number): Promise<Album | null> {
