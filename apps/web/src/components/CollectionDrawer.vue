@@ -2,6 +2,7 @@
 import { nextTick, onBeforeUnmount, ref, watch } from "vue";
 import { RouterLink } from "vue-router";
 
+import AlbumArtwork from "@/components/AlbumArtwork.vue";
 import type { Album } from "@/types/album";
 
 const props = defineProps<{
@@ -205,12 +206,7 @@ onBeforeUnmount(() => {
               :key="album.id"
               class="flex items-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-3"
             >
-              <div
-                class="flex size-16 shrink-0 items-center justify-center rounded-xl bg-linear-to-br font-bold text-white"
-                :class="album.coverClass"
-              >
-                {{ album.initials }}
-              </div>
+              <AlbumArtwork :album="album" class="size-16 shrink-0 rounded-xl" />
 
               <div class="min-w-0 flex-1">
                 <p class="truncate font-semibold text-white">

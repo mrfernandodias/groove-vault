@@ -2,6 +2,7 @@
 import { ref, watch } from "vue";
 import { RouterLink } from "vue-router";
 
+import AlbumArtwork from "@/components/AlbumArtwork.vue";
 import { albumRepository } from "@/config/dependencies";
 import { useCollectionStore } from "@/stores/collection";
 import type { Album } from "@/types/album";
@@ -180,12 +181,11 @@ watch(
         v-else-if="album"
         class="mt-16 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-center"
       >
-        <div
-          class="flex aspect-square items-center justify-center rounded-3xl bg-linear-to-br text-7xl font-black text-white shadow-2xl shadow-violet-950/40"
-          :class="album.coverClass"
-        >
-          {{ album.initials }}
-        </div>
+        <AlbumArtwork
+          :album="album"
+          eager
+          class="aspect-square rounded-3xl shadow-2xl shadow-black/40"
+        />
 
         <div>
           <p class="text-sm font-semibold text-violet-400">

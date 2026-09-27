@@ -130,7 +130,7 @@ function closeCollection(): void {
             v-model="searchTerm"
             type="search"
             placeholder="Busque por álbum ou artista..."
-            class="min-w-0 flex-1 bg-transparent px-4 py-3 text-base text-white outline-none placeholder:text-zinc-600"
+            class="min-w-0 flex-1 appearance-none bg-transparent! px-4 py-3 text-base text-white outline-none placeholder:text-zinc-600 autofill:bg-transparent! [&:-webkit-autofill]:[-webkit-text-fill-color:white] [&:-webkit-autofill]:[transition:background-color_9999s_ease-out]"
           />
 
           <button

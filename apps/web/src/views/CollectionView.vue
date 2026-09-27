@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { RouterLink } from "vue-router";
 
+import AlbumArtwork from "@/components/AlbumArtwork.vue";
 import { useCollectionStore } from "@/stores/collection";
 
 const collectionStore = useCollectionStore();
@@ -85,12 +86,7 @@ const collectionStore = useCollectionStore();
             :key="album.id"
             class="group overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-3 transition hover:-translate-y-1 hover:border-violet-400/30 hover:bg-white/10"
           >
-            <div
-              class="flex aspect-square items-center justify-center rounded-xl bg-linear-to-br text-3xl font-black text-white shadow-lg"
-              :class="album.coverClass"
-            >
-              {{ album.initials }}
-            </div>
+            <AlbumArtwork :album="album" class="aspect-square rounded-xl" />
 
             <div class="flex items-end gap-4 px-1 pt-4 pb-2">
               <div class="min-w-0 flex-1">
