@@ -1,4 +1,4 @@
 import type { AlbumRepository } from "@/repositories/albumRepository";
-import { localAlbumRepository } from "@/repositories/localAlbumRepository";
+import { discogsAlbumRepository } from "@/repositories/discogsAlbumRepository";
 
-export const albumRepository: AlbumRepository = localAlbumRepository;
+export const albumRepository: AlbumRepository = discogsAlbumRepository;

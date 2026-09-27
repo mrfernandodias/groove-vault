@@ -1,4 +1,7 @@
-import type { DiscogsSearchResultDto } from "@/integrations/discogs/discogs.types";
+import type {
+  DiscogsMasterDto,
+  DiscogsSearchResultDto,
+} from "@/integrations/discogs/discogs.types";
 import type { Album } from "@/types/album";
 
 const FALLBACK_COVER_CLASS = "from-violet-500 to-fuchsia-600";
@@ -62,6 +65,32 @@ export function mapDiscogsSearchResultToAlbum(dto: DiscogsSearchResultDto): Albu
     artist,
     year: parseYear(dto.year),
     initials: createInitials(title),
+    coverClass: FALLBACK_COVER_CLASS,
+  };
+
+  if (coverUrl) {
+    album.coverUrl = coverUrl;
+  }
+
+  return album;
+}
+
+export function mapDiscogsMasterToAlbum(dto: DiscogsMasterDto): Album {
+  const artist =
+    dto.artists
+      .map((discogsArtist) => discogsArtist.name.trim())
+      .filter(Boolean)
+      .join(", ") || "Artista desconhecido";
+
+  const primaryImage = dto.images?.find((image) => image.type === "primary");
+  const coverUrl = primaryImage?.uri || dto.images?.[0]?.uri;
+
+  const album: Album = {
+    id: dto.id,
+    title: dto.title.trim(),
+    artist,
+    year: parseYear(dto.year),
+    initials: createInitials(dto.title),
     coverClass: FALLBACK_COVER_CLASS,
   };
 
