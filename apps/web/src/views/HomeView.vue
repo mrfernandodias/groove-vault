@@ -19,6 +19,7 @@ const totalPages = ref(0);
 const totalItems = ref(0);
 const isLoadingMore = ref(false);
 const paginationError = ref("");
+let searchVersion = 0;
 
 const collectionStore = useCollectionStore();
 
@@ -31,15 +32,20 @@ const hasMoreResults = computed(() => {
 });
 
 async function handleSearch(): Promise<void> {
-  submittedTerm.value = searchTerm.value.trim();
+  const requestVersion = ++searchVersion;
+  const query = searchTerm.value.trim();
+
+  submittedTerm.value = query;
   searchResults.value = [];
   searchError.value = "";
   currentPage.value = 0;
   totalPages.value = 0;
   totalItems.value = 0;
   paginationError.value = "";
+  isSearching.value = false;
+  isLoadingMore.value = false;
 
-  if (!submittedTerm.value) {
+  if (!query) {
     return;
   }
 
@@ -47,19 +53,31 @@ async function handleSearch(): Promise<void> {
 
   try {
     const result = await albumRepository.search({
-      query: submittedTerm.value,
+      query: query,
       page: 1,
       perPage: 12,
     });
+
+    if (requestVersion !== searchVersion) {
+      return;
+    }
 
     searchResults.value = result.albums;
     currentPage.value = result.page;
     totalPages.value = result.totalPages;
     totalItems.value = result.totalItems;
-  } catch {
+  } catch (error: unknown) {
+    if (requestVersion !== searchVersion) {
+      return;
+    }
+
+    console.error("Fala ao pesquisar álbuns:", error);
+
     searchError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
   } finally {
-    isSearching.value = false;
+    if (requestVersion === searchVersion) {
+      isSearching.value = false;
+    }
   }
 }
 
@@ -68,15 +86,23 @@ async function loadMoreResults(): Promise<void> {
     return;
   }
 
+  const requestVersion = searchVersion;
+  const query = submittedTerm.value;
+  const nextPage = currentPage.value + 1;
+
   isLoadingMore.value = true;
   paginationError.value = "";
 
   try {
     const result = await albumRepository.search({
-      query: submittedTerm.value,
-      page: currentPage.value + 1,
+      query,
+      page: nextPage,
       perPage: 12,
     });
+
+    if (requestVersion !== searchVersion || query !== submittedTerm.value) {
+      return;
+    }
 
     const existingIds = new Set(searchResults.value.map((album) => album.id));
 
@@ -87,11 +113,17 @@ async function loadMoreResults(): Promise<void> {
     totalPages.value = result.totalPages;
     totalItems.value = result.totalItems;
   } catch (error: unknown) {
+    if (requestVersion !== searchVersion) {
+      return;
+    }
+
     console.error("Falha ao pesquisar álbuns:", error);
 
     paginationError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
   } finally {
-    isLoadingMore.value = false;
+    if (requestVersion === searchVersion) {
+      isLoadingMore.value = false;
+    }
   }
 }
 

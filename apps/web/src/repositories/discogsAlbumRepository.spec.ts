@@ -108,6 +108,24 @@ describe("discogsAlbumRepository", () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
+  it("returns null when the Discogs master does not exist", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse(
+        {
+          message: "Master not foud.",
+        },
+        404,
+      ),
+    );
+
+    await expect(discogsAlbumRepository.findById(999999)).resolves.toBeNull();
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.discogs.com/masters/999999",
+      expect.any(Object),
+    );
+  });
+
   it("finds and maps a master by ID", async () => {
     fetchMock.mockResolvedValue(
       jsonResponse({

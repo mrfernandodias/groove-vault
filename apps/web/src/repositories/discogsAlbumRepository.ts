@@ -12,6 +12,17 @@ import type { AlbumRepository, AlbumSearchParams, AlbumSearchResult } from "./al
 
 const DISCOGS_API_URL = "https://api.discogs.com";
 
+class DiscogsApiError extends Error {
+  readonly status: number;
+
+  constructor(status: number, message: string) {
+    super(message);
+
+    this.name = "DiscogsApiError";
+    this.status = status;
+  }
+}
+
 function getDiscogsAuthorizationHeader(): string {
   const key = import.meta.env.VITE_DISCOGS_CONSUMER_KEY?.trim();
 
@@ -35,7 +46,10 @@ async function requestDiscogs<T>(url: URL | string): Promise<T> {
   if (!response.ok) {
     const errorBody = await response.text();
 
-    throw new Error(`A API do Discogs respondeu com o status ${response.status}: ${errorBody}`);
+    throw new DiscogsApiError(
+      404,
+      `A API do Discogs respondeu com o status ${response.status}: ${errorBody}`,
+    );
   }
 
   return (await response.json()) as T;
@@ -83,8 +97,16 @@ export const discogsAlbumRepository: AlbumRepository = {
       return null;
     }
 
-    const response = await requestDiscogs<DiscogsMasterDto>(`${DISCOGS_API_URL}/masters/${id}`);
+    try {
+      const response = await requestDiscogs<DiscogsMasterDto>(`${DISCOGS_API_URL}/masters/${id}`);
 
-    return mapDiscogsMasterToAlbum(response);
+      return mapDiscogsMasterToAlbum(response);
+    } catch (error: unknown) {
+      if (error instanceof DiscogsApiError && error.status === 404) {
+        return null;
+      }
+
+      throw error;
+    }
   },
 };
