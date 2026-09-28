@@ -1,25 +1,14 @@
 <script setup lang="ts">
 import { storeToRefs } from "pinia";
-import { computed, ref } from "vue";
+import { ref } from "vue";
 
 import AlbumCard from "@/components/AlbumCard.vue";
 import CollectionDrawer from "@/components/CollectionDrawer.vue";
+import { useAlbumSearch } from "@/composables/useAlbumSearch";
 import { albumRepository } from "@/config/dependencies";
 import { useCollectionStore } from "@/stores/collection";
-import type { Album } from "@/types/album";
 
-const searchTerm = ref("");
-const submittedTerm = ref("");
 const isCollectionOpen = ref(false);
-const searchResults = ref<Album[]>([]);
-const isSearching = ref(false);
-const searchError = ref("");
-const currentPage = ref(0);
-const totalPages = ref(0);
-const totalItems = ref(0);
-const isLoadingMore = ref(false);
-const paginationError = ref("");
-let searchVersion = 0;
 
 const collectionStore = useCollectionStore();
 
@@ -27,105 +16,19 @@ const { collection } = storeToRefs(collectionStore);
 
 const { isInCollection, addToCollection, removeFromCollection } = collectionStore;
 
-const hasMoreResults = computed(() => {
-  return currentPage.value < totalPages.value;
-});
-
-async function handleSearch(): Promise<void> {
-  const requestVersion = ++searchVersion;
-  const query = searchTerm.value.trim();
-
-  submittedTerm.value = query;
-  searchResults.value = [];
-  searchError.value = "";
-  currentPage.value = 0;
-  totalPages.value = 0;
-  totalItems.value = 0;
-  paginationError.value = "";
-  isSearching.value = false;
-  isLoadingMore.value = false;
-
-  if (!query) {
-    return;
-  }
-
-  isSearching.value = true;
-
-  try {
-    const result = await albumRepository.search({
-      query: query,
-      page: 1,
-      perPage: 12,
-    });
-
-    if (requestVersion !== searchVersion) {
-      return;
-    }
-
-    searchResults.value = result.albums;
-    currentPage.value = result.page;
-    totalPages.value = result.totalPages;
-    totalItems.value = result.totalItems;
-  } catch (error: unknown) {
-    if (requestVersion !== searchVersion) {
-      return;
-    }
-
-    console.error("Fala ao pesquisar álbuns:", error);
-
-    searchError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
-  } finally {
-    if (requestVersion === searchVersion) {
-      isSearching.value = false;
-    }
-  }
-}
-
-async function loadMoreResults(): Promise<void> {
-  if (!submittedTerm.value || !hasMoreResults.value || isLoadingMore.value) {
-    return;
-  }
-
-  const requestVersion = searchVersion;
-  const query = submittedTerm.value;
-  const nextPage = currentPage.value + 1;
-
-  isLoadingMore.value = true;
-  paginationError.value = "";
-
-  try {
-    const result = await albumRepository.search({
-      query,
-      page: nextPage,
-      perPage: 12,
-    });
-
-    if (requestVersion !== searchVersion || query !== submittedTerm.value) {
-      return;
-    }
-
-    const existingIds = new Set(searchResults.value.map((album) => album.id));
-
-    const newAlbums = result.albums.filter((album) => !existingIds.has(album.id));
-
-    searchResults.value.push(...newAlbums);
-    currentPage.value = result.page;
-    totalPages.value = result.totalPages;
-    totalItems.value = result.totalItems;
-  } catch (error: unknown) {
-    if (requestVersion !== searchVersion) {
-      return;
-    }
-
-    console.error("Falha ao pesquisar álbuns:", error);
-
-    paginationError.value = "Não foi possível pesquisar os álbuns. Tente novamente.";
-  } finally {
-    if (requestVersion === searchVersion) {
-      isLoadingMore.value = false;
-    }
-  }
-}
+const {
+  searchTerm,
+  submittedTerm,
+  searchResults,
+  isSearching,
+  searchError,
+  totalItems,
+  isLoadingMore,
+  paginationError,
+  hasMoreResults,
+  handleSearch,
+  loadMoreResults,
+} = useAlbumSearch(albumRepository);
 
 function openCollection(): void {
   isCollectionOpen.value = true;
